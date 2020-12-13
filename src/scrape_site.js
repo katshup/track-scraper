@@ -23,7 +23,7 @@ class WMBR extends EventEmitter {
             let prog_selector = selectors.filter(item => item.attrs.name == "program")[0]
             prog_selector.findAll("option").forEach(item => this.prog_map[item.text] = item.attrs.value)
             // let whoever know that we loaded all the programs
-            this.emit("programs_loaded")
+            this.emit("programs_loaded", this.prog_map)
         }, this.__generic_error_handle)
     }
 
@@ -81,20 +81,25 @@ class Show {
     }
 }
 
-let w = new WMBR()
+module.exports = {
+    WMBR,
+    Show
+};
 
-w.on("programs_loaded", () => {
-    // console.log(w.prog_map)
-    w.process_show('Coffeetime', () => {
-        console.log("Error")
-    })
-})
+// let w = new WMBR()
 
-w.on("show_processed", (show) => {
-    show.process_page(1, (error) => {
-        console.log(error)
-        console.log("ERROR")
-    })
-})
+// w.on("programs_loaded", () => {
+//     // console.log(w.prog_map)
+//     w.process_show('Coffeetime', () => {
+//         console.log("Error")
+//     })
+// })
 
-w.__process_programs()
+// w.on("show_processed", (show) => {
+//     show.process_page(1, (error) => {
+//         console.log(error)
+//         console.log("ERROR")
+//     })
+// })
+
+// w.__process_programs()

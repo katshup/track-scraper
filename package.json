@@ -46,7 +46,8 @@
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.0",
-    "jssoup": "0.0.10"
+    "jssoup": "0.0.10",
+    "pug": "^3.0.0"
   },
   "devDependencies": {
     "@electron-forge/cli": "6.0.0-beta.47",
@@ -54,6 +55,6 @@
     "@electron-forge/maker-rpm": "6.0.0-beta.47",
     "@electron-forge/maker-squirrel": "6.0.0-beta.47",
     "@electron-forge/maker-zip": "6.0.0-beta.47",
-    "electron": "7.1.7"
+    "electron": "^7.3.3"
   }
 }

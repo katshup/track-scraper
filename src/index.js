@@ -1,5 +1,6 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain} = require('electron');
 const path = require('path');
+const scraper = require('./scrape_site.js');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
@@ -15,6 +16,10 @@ const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    webPreferences: {
+      nodeIntegration: true,
+      enableRemoteModule: true
+    }
   });
 
   // and load the index.html of the app.
@@ -30,6 +35,7 @@ const createWindow = () => {
     // when you should delete the corresponding element.
     mainWindow = null;
   });
+
 };
 
 // This method will be called when Electron has finished
@@ -52,6 +58,17 @@ app.on('activate', () => {
   if (mainWindow === null) {
     createWindow();
   }
+});
+
+ipcMain.on("prog_ready", (event, arg) => {
+  console.log(arg);
+  let w = new scraper.WMBR();
+    w.on("programs_loaded", (shows) => {
+      console.log(Object.keys(shows))
+      event.reply("shows_ready", shows);
+    });
+
+    w.__process_programs();
 });
 
 // In this file you can include the rest of your app's specific main process
