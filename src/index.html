@@ -11,7 +11,10 @@
     <h1>💖 Hello World!</h1>
     <p>Welcome to your Electron application.</p>
     <div style="background: #FFF; ">
-      <select id="shows"></select>
+      <select id="shows" onchange="show_selected(this.value)"></select>
+    </div>
+    <div style="background: #FFF; ">
+      <select id="dates" onchange="show_selected(this.value)"></select>
     </div>
   </body>
 </html>

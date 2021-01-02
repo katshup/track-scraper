@@ -11,6 +11,8 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 
+let w = new scraper.WMBR();
+
 const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -62,13 +64,34 @@ app.on('activate', () => {
 
 ipcMain.on("prog_ready", (event, arg) => {
   console.log(arg);
-  let w = new scraper.WMBR();
-    w.on("programs_loaded", (shows) => {
-      console.log(Object.keys(shows))
-      event.reply("shows_ready", shows);
-    });
 
-    w.__process_programs();
+  w.on("programs_loaded", (shows) => {
+    console.log(Object.keys(shows))
+    event.reply("shows_ready", shows);
+  });
+
+  w.__process_programs();
+});
+
+ipcMain.on("show_selected", (event, arg) => {
+  console.log(arg);
+
+  w.on("show_processed", (show) => {
+    event.reply("show_loaded", show);
+
+    show.on("playlists_found", () => {
+      show.playlists[0].process_playlist()
+    })
+
+    show.process_page(1, (error) => {
+      console.log(error);
+    });
+  });
+
+  w.process_show(arg, () => {
+    console.log("Show not available");
+  });
+
 });
 
 // In this file you can include the rest of your app's specific main process
