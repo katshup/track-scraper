@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.0",
-    "jssoup": "0.0.10",
+    "jssoup": "^0.0.10",
     "pug": "^3.0.0"
   },
   "devDependencies": {

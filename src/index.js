@@ -62,7 +62,7 @@ app.on('activate', () => {
   }
 });
 
-ipcMain.on("prog_ready", (event, arg) => {
+ipcMain.on("prog_ready", (event, arg) => {  // programS ready
   console.log(arg);
 
   w.on("programs_loaded", (shows) => {
@@ -75,19 +75,20 @@ ipcMain.on("prog_ready", (event, arg) => {
 
 ipcMain.on("show_selected", (event, arg) => {
   console.log(arg);
-
-  w.on("show_processed", (show) => {
+  
+  w.once("show_processed", (show) => {
+    console.log(show);
     event.reply("show_loaded", show);
-
+    
     show.on("playlists_found", () => {
-      show.playlists[0].process_playlist()
-    })
-
+      show.playlists[0].process_playlist();
+    });
+    
     show.process_page(1, (error) => {
       console.log(error);
     });
   });
-
+  
   w.process_show(arg, () => {
     console.log("Show not available");
   });

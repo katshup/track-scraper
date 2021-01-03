@@ -51,7 +51,9 @@ class WMBR extends EventEmitter {
                 max_page = utils.urldecode(links[links.length - 1].find("a").attrs.href)['page']
             }
             
-            this.emit("show_processed", new Show(show_name, max_page, search_opt))
+            let sho = new Show(show_name, max_page, search_opt)
+            console.log(sho)
+            this.emit("show_processed", sho)
         })
     }
 }

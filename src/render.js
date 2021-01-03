@@ -15,6 +15,10 @@ var gen_shows = pug.compile([
     ' option= show'
   ].join('\n'));
 
+var gen_playlists = pug.compile([  // hasn't been used yet
+  ''
+])
+
 // page is ready, tell the main process to scrape the wbmr site
 $(document).ready(function() {
     console.log("program ready to talk to main");
