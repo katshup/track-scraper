@@ -79,7 +79,7 @@ class Show extends EventEmitter {
         let options = {hostname: this.BASE_URL, port: 443, path: '/wmbr/?' + utils.urlencode(this.search_opt), method: 'GET'}
         console.log(options)
         utils.request(options, response_data => {
-            let playlists = new Set()
+            let playlists = new Set()  // list of all playlist IDs
             let soup = new JSSoup(response_data)
             let a_tags = soup.findAll("a")
             a_tags.filter(item => item.attrs.href.includes("playlist.php")).forEach(item => playlists.add(item.attrs.href))
@@ -87,7 +87,9 @@ class Show extends EventEmitter {
             console.log(playlists)
 
             Array.from(playlists).forEach((pl) => {
-                this.playlists.push( new Playlist(this.show_name, pl) )
+                // TODO: move the stuff that gets the DJ and date info up so that this is processed in Show rather than Playlist
+                
+                this.playlists.push( new Playlist(this.show_name, pl) )  // this already makes a new playlist with the basic attributes
             })
 
             this.emit("playlists_found");
@@ -114,10 +116,10 @@ class Playlist extends EventEmitter {
             let info_container = soup.find("div", "inv-container");
             let dj_row = info_container.contents[0];
             let dj_div = dj_row.contents[1];
-            this.dj = dj_div.find("a").text;
+            this.dj = dj_div.find("a").text;  // TODO: DJ for each found playlist needs to be processed in Show rather than Playlist
 
             let pl_div = soup.find("div", {'id': "playlist_data"});
-            this.date = pl_div.attrs.showstart.split(" ")[0];
+            this.date = pl_div.attrs.showstart.split(" ")[0];  // TODO: date for each found playlist needs to be processed in Show rather than Playlist
 
             let song_rows = soup.findAll("div", "print_song_in_set");
             song_rows.forEach((row, index) => {

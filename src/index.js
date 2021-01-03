@@ -81,7 +81,8 @@ ipcMain.on("show_selected", (event, arg) => {
     event.reply("show_loaded", show);
     
     show.on("playlists_found", () => {
-      show.playlists[0].process_playlist();
+      show.playlists[0].process_playlist();  // right now only processes the info in the first playlist
+     
     });
     
     show.process_page(1, (error) => {

@@ -10,11 +10,24 @@
   <body>
     <h1>💖 Hello World!</h1>
     <p>Welcome to your Electron application.</p>
-    <div style="background: #FFF; ">
+
+    <div style="background: #FFF; "> <!-- show dropdown -->
       <select id="shows" onchange="show_selected(this.value)"></select>
     </div>
-    <div style="background: #FFF; ">
+
+    <!-- playlist dropdown -- considering a list or table instead -->
+    <!-- <div>
       <select id="dates" onchange="show_selected(this.value)"></select>
-    </div>
+    </div> -->
+
+    <!-- playlist checkbox list -->
+    <div>
+      <ul id = "playlists">
+        
+      </ul>
+    </div> 
+
+
+
   </body>
 </html>
