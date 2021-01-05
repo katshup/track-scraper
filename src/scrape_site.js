@@ -52,9 +52,9 @@ class WMBR extends EventEmitter {
             }
   
             
-            let sho = new Show(show_name, max_page, search_opt)
-            // console.log(sho)
-            this.emit("show_processed", sho)
+            let show = new Show(show_name, max_page, search_opt)
+            // console.log(show)
+            this.emit("show_processed", show)
         })
     }
 }
@@ -67,7 +67,8 @@ class Show extends EventEmitter {
         this.show_name = show_name
         this.max_page = max_page
         this.search_opt = search_opt
-        this.playlists = []
+        this.playlists = []  // will hold the associated Playlist objects
+        this.datetimes = []  // array to put date text for display on the page
     }
 
     process_page(page_num, err_callback){
@@ -87,11 +88,9 @@ class Show extends EventEmitter {
             pl_links.forEach(item => playlists.add(item.attrs.href))  // list of playlist IDs
             console.log(playlists.size + ' playlists')
 
-            // set up new dictionary to store what will become the playlist dates and djs
-            date_dj = new Array()
-
             // on this page, get all the dates 
-            let datetimes = new Array()  // array to put date text for display on the page
+            // let datetimes = new Array()  // array to put date text for display on the page
+            let dates = new Array()  // TODO: can probably do this in a less awkward way
             // sometimes there are multiple episodes per date, so need to make sure number of dates corresponds with number of playlists
             pl_links.forEach(link => {  // for each playlist link...
                 if (link.parent.attrs.class == 'hidden-xs col-sm-3 col-Date') {  // workaround to the findAll not processing spaces
@@ -100,14 +99,13 @@ class Show extends EventEmitter {
                     let pl_date = mo_parts[mo_parts.length - 1]
                     let pl_time = link.text
                     let datetime = pl_date + ' at ' + pl_time  // string together the date and time
-                    // console.log(datetime)
-                    datetimes.push(datetime)
-                    console.log(Date.parse(pl_date))
+
+                    dates.push(pl_date)  // to get passed into the Playlist object
+                    this.datetimes.push(datetime)  // to be displayed on screen
+                    // console.log(Date.parse(pl_date))
                 }
             })
             
-
-            // TODO: this is somewhat repetitive because we already found all "a" tags before
             let info_divs = soup.findAll("div", "col-DJ")  // find all divs with dj info. note: some are hidden
             // in order to filter the legitimate DJ names, need to find all "a" tags
             let djs = new Array()  // array to filter out hidden djs
@@ -117,22 +115,22 @@ class Show extends EventEmitter {
                     // console.log(dj_link.text)
                     djs.push(dj_link.text)  // add to the djs list
                 }
-                // djs.add(dj_link.text)  // add dj name
             })
-            console.log(playlists.size)  // check to see if they're the same length
-            console.log(datetimes.length)  
+            // check to see if they're the same length
+            console.log(this.datetimes.length)  
             console.log(djs.length)
 
-            // TODO: add dates and djs in dictionary form (maybe in same object as playlist IDs) to be listed out, and also passed to playlist
-        
+             // set up new playlists with their attributes found on the show page
+             var i = 1
+             for (; i <= playlists.size; i++) {
+                let pl = Array.from(playlists)[i];
+                let pldate = dates[i];
+                let pldj = djs[i];
+                let pl_setup = new Playlist(this.show_name, pl, pldj, pldate)  // create the new playlist object to be set up with the basic info
 
-            Array.from(playlists).forEach((pl) => {  // turn playlist IDs into array and iterate over it
-                // TODO: move the stuff that gets the DJ and date info up so that this is processed in Show rather than Playlist
-                let pl_setup = new Playlist(this.show_name, pl)  // create the new playlist object to be set up with the basic info
-                
-                this.playlists.push( pl_setup )  // this already makes a new playlist with the basic attributes
-            })
-            // console.log(this.playlists)
+                this.playlists.push( pl_setup )  
+             }
+
 
             this.emit("playlists_found");
         }, err_callback)
@@ -142,11 +140,11 @@ class Show extends EventEmitter {
 class Playlist extends EventEmitter {
     BASE_URL = "track-blaster.com"
 
-    constructor(show_name, playlist){
+    constructor(show_name, playlist, dj, date){
         super()
         this.show_name = show_name;
-        this.dj = "";
-        this.date = "";
+        this.dj = dj;
+        this.date = date;
         this.playlist = playlist;
         this.entries = [];
 

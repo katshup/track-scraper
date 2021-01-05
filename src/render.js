@@ -43,7 +43,7 @@ ipcRenderer.on("show_loaded", (event, show) => {
     console.log(`Maximum page for show ${show.show_name} is ${show.max_page}!`);
 
     var playlist_selector = $('#playlists')  // corresponds to the playlist list in the html
-    current_playlists = show.playlists
+    datetimes = show.datetimes
     //console.log(current_playlists)
     // current_playlists.forEach(item => console.log('hellooooo?'))
     // NOT FUNCTIONING YET:
