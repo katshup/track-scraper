@@ -83,19 +83,31 @@ class Show extends EventEmitter {
             let playlists = new Set()  
             let soup = new JSSoup(response_data)
             let a_tags = soup.findAll("a")
-            a_tags.filter(item => item.attrs.href.includes("playlist.php")).forEach(item => playlists.add(item.attrs.href))  // list of playlist IDs
-            // console.log(playlists)
+            let pl_links = a_tags.filter(item => item.attrs.href.includes("playlist.php"))  // get all playlist links (will use this later)
+            pl_links.forEach(item => playlists.add(item.attrs.href))  // list of playlist IDs
+            console.log(playlists.size + ' playlists')
 
-            // on this page, get all the dates (note: we haven't started using the page number yet)
-            // have to define the var beforehand because seems to be on strict mode?
-            var pg = 1
-            let date_divs = soup.findAll("h4", "index-h4")  // find all date headers
-            let dates = new Array()  // array to put date text
-            date_divs.forEach(item => {  // for each episode...
-                dates.push(item.text)  // add to the dates list
-                console.log(item.text)
+            // set up new dictionary to store what will become the playlist dates and djs
+            date_dj = new Array()
+
+            // on this page, get all the dates 
+            let datetimes = new Array()  // array to put date text for display on the page
+            // sometimes there are multiple episodes per date, so need to make sure number of dates corresponds with number of playlists
+            pl_links.forEach(link => {  // for each playlist link...
+                if (link.parent.attrs.class == 'hidden-xs col-sm-3 col-Date') {  // workaround to the findAll not processing spaces
+                    let mo = link.attrs.title
+                    let mo_parts = mo.split('for ')  // split off the date part of the mouseover
+                    let pl_date = mo_parts[mo_parts.length - 1]
+                    let pl_time = link.text
+                    let datetime = pl_date + ' at ' + pl_time  // string together the date and time
+                    // console.log(datetime)
+                    datetimes.push(datetime)
+                    console.log(Date.parse(pl_date))
+                }
             })
+            
 
+            // TODO: this is somewhat repetitive because we already found all "a" tags before
             let info_divs = soup.findAll("div", "col-DJ")  // find all divs with dj info. note: some are hidden
             // in order to filter the legitimate DJ names, need to find all "a" tags
             let djs = new Array()  // array to filter out hidden djs
@@ -108,7 +120,7 @@ class Show extends EventEmitter {
                 // djs.add(dj_link.text)  // add dj name
             })
             console.log(playlists.size)  // check to see if they're the same length
-            console.log(dates.length)  
+            console.log(datetimes.length)  
             console.log(djs.length)
 
             // TODO: add dates and djs in dictionary form (maybe in same object as playlist IDs) to be listed out, and also passed to playlist
