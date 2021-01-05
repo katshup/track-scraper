@@ -85,7 +85,7 @@ ipcMain.on("show_selected", (event, arg) => {
      
     });
     
-    show.process_page(1, (error) => {
+    show.process_page(1, (error) => {  // right now only processes 1st page
       console.log(error);
     });
   });

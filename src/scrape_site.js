@@ -48,11 +48,12 @@ class WMBR extends EventEmitter {
 
             if (paginator != null){
                 let links = paginator.findAll('li').filter(item => ((item.attrs.class == 'active') || (!('class' in item.attrs))))
-                max_page = utils.urldecode(links[links.length - 1].find("a").attrs.href)['page']
+                max_page = parseInt(utils.urldecode(links[links.length - 1].find("a").attrs.href)['page'])
             }
+  
             
             let sho = new Show(show_name, max_page, search_opt)
-            console.log(sho)
+            // console.log(sho)
             this.emit("show_processed", sho)
         })
     }
@@ -74,23 +75,52 @@ class Show extends EventEmitter {
             err_callback(null)
         }
 
-        this.search_opt['page'] = page_num
+        this.search_opt['page'] = page_num  // recall search_opt is just the variables that specify what you're looking at
 
         let options = {hostname: this.BASE_URL, port: 443, path: '/wmbr/?' + utils.urlencode(this.search_opt), method: 'GET'}
-        console.log(options)
+        // console.log(options)
         utils.request(options, response_data => {
-            let playlists = new Set()  // list of all playlist IDs
+            let playlists = new Set()  
             let soup = new JSSoup(response_data)
             let a_tags = soup.findAll("a")
-            a_tags.filter(item => item.attrs.href.includes("playlist.php")).forEach(item => playlists.add(item.attrs.href))
+            a_tags.filter(item => item.attrs.href.includes("playlist.php")).forEach(item => playlists.add(item.attrs.href))  // list of playlist IDs
+            // console.log(playlists)
 
-            console.log(playlists)
-
-            Array.from(playlists).forEach((pl) => {
-                // TODO: move the stuff that gets the DJ and date info up so that this is processed in Show rather than Playlist
-                
-                this.playlists.push( new Playlist(this.show_name, pl) )  // this already makes a new playlist with the basic attributes
+            // on this page, get all the dates (note: we haven't started using the page number yet)
+            // have to define the var beforehand because seems to be on strict mode?
+            var pg = 1
+            let date_divs = soup.findAll("h4", "index-h4")  // find all date headers
+            let dates = new Array()  // array to put date text
+            date_divs.forEach(item => {  // for each episode...
+                dates.push(item.text)  // add to the dates list
+                console.log(item.text)
             })
+
+            let info_divs = soup.findAll("div", "col-DJ")  // find all divs with dj info. note: some are hidden
+            // in order to filter the legitimate DJ names, need to find all "a" tags
+            let djs = new Array()  // array to filter out hidden djs
+            info_divs.forEach(item => {  // for each episode...
+                let dj_link = item.find("a")  // find the dj link in div
+                if (dj_link != null) {  // if there is a link in the dj div, then it's not hidden
+                    // console.log(dj_link.text)
+                    djs.push(dj_link.text)  // add to the djs list
+                }
+                // djs.add(dj_link.text)  // add dj name
+            })
+            console.log(playlists.size)  // check to see if they're the same length
+            console.log(dates.length)  
+            console.log(djs.length)
+
+            // TODO: add dates and djs in dictionary form (maybe in same object as playlist IDs) to be listed out, and also passed to playlist
+        
+
+            Array.from(playlists).forEach((pl) => {  // turn playlist IDs into array and iterate over it
+                // TODO: move the stuff that gets the DJ and date info up so that this is processed in Show rather than Playlist
+                let pl_setup = new Playlist(this.show_name, pl)  // create the new playlist object to be set up with the basic info
+                
+                this.playlists.push( pl_setup )  // this already makes a new playlist with the basic attributes
+            })
+            // console.log(this.playlists)
 
             this.emit("playlists_found");
         }, err_callback)
@@ -107,19 +137,13 @@ class Playlist extends EventEmitter {
         this.date = "";
         this.playlist = playlist;
         this.entries = [];
+
     }
 
     process_playlist(){
         let options = {hostname: this.BASE_URL, port:443, path: '/wmbr/' + this.playlist, method: 'GET'};
         utils.request(options, response_data => {
             let soup = new JSSoup(response_data);
-            let info_container = soup.find("div", "inv-container");
-            let dj_row = info_container.contents[0];
-            let dj_div = dj_row.contents[1];
-            this.dj = dj_div.find("a").text;  // TODO: DJ for each found playlist needs to be processed in Show rather than Playlist
-
-            let pl_div = soup.find("div", {'id': "playlist_data"});
-            this.date = pl_div.attrs.showstart.split(" ")[0];  // TODO: date for each found playlist needs to be processed in Show rather than Playlist
 
             let song_rows = soup.findAll("div", "print_song_in_set");
             song_rows.forEach((row, index) => {
@@ -162,6 +186,7 @@ class Playlist extends EventEmitter {
                     }
 
                     this.entries.push( new Entry(song_name, artist_name, album_name, real_time) );
+                    
                 }
             });
         });
