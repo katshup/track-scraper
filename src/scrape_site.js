@@ -9,6 +9,7 @@ class WMBR extends EventEmitter {
     constructor(){
         super()
         this.prog_map = {}
+        this.show_map = {}
     }
 
     __generic_error_handle(error){
@@ -28,8 +29,15 @@ class WMBR extends EventEmitter {
     }
 
     process_show(show_name, err_callback){
+        // you somehow found a show that doesn't exist in the map?
         if (!(show_name in this.prog_map)){
             err_callback()
+        }
+
+        // did we already process this show?
+        if (show_name in this.show_map){
+            this.emit("show_processed", this.show_map[show_name])
+            return
         }
 
         // url parameter for a particular show
@@ -51,9 +59,8 @@ class WMBR extends EventEmitter {
                 max_page = parseInt(utils.urldecode(links[links.length - 1].find("a").attrs.href)['page'])
             }
   
-            
             let show = new Show(show_name, max_page, search_opt)
-            // console.log(show)
+            this.show_map[show_name] = show
             this.emit("show_processed", show)
         })
     }
@@ -72,7 +79,7 @@ class Show extends EventEmitter {
         // this.djs = []
     }
 
-    process_page(page_num, err_callback){
+    process_page(page_num, processed_callback, err_callback){
         console.log('processing page ' + page_num)
 
         if (page_num > this.max_page){
@@ -124,8 +131,8 @@ class Show extends EventEmitter {
             console.log(djs.length)
 
              // set up new playlists with their attributes found on the show page
-             var i = 1
-             for (; i <= playlists.size; i++) {
+             var i = 0
+             for (; i < playlists.size; i++) {
                 let pl = Array.from(playlists)[i];
                 let pldate = dates[i];
                 let pldj = djs[i];
@@ -135,7 +142,7 @@ class Show extends EventEmitter {
              }
 
 
-            this.emit("playlists_found");
+            processed_callback(this.playlists)
         }, err_callback)
     }
 }

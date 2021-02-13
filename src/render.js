@@ -11,13 +11,14 @@ var show_selected = (input) => {
 }
 
 var pg_selected = (num) => {
+    var selected_show = $('#shows').val()  // get currently selected show from selector
     console.log("you selected page " + num);
-    ipcRenderer.send("pg_selected", num);
+    console.log("the selected show was " + selected_show)
+    ipcRenderer.send("pg_selected", num, selected_show);
 }
 
 // is called to generate a select option for each show
 var gen_shows = pug.compile([ 
-    // 'option(select = "selected") "Choose a show..."',  // TODO: this works visually but program treats it as a show and tries to process it. need to stop that
     'each show in shows',
     ' option= show'
   ].join('\n'));
@@ -30,10 +31,8 @@ var gen_pages = pug.compile([
 ].join('\n'));
 
 var gen_playlists = pug.compile([  // NOT FUNCTIONING YET
-  // 'each playlist in current_playlists',
-  // ' li(type = "checkbox")= playlist.date'  // TODO: need to make a string with dj and date, and list that
-  'each testing in datetimes',
-  ' li= testing'
+  'each date in qqq',
+  '  li= date'
 ].join('\n'));
 
 // page is ready, tell the main process to scrape the wbmr site
@@ -46,13 +45,12 @@ $(document).ready(function() {
 // loads all available shows into a selector list
 ipcRenderer.on("shows_ready", (event, shows) => {
     console.log("shows are ready");
-    // console.log(shows)
     var select_element = $('#shows');  // assigns var to the select in the html
     select_element.html(gen_shows({ shows : Object.keys(shows) }));  // dictionary format, because that's what pug takes
     console.log(Object.keys(shows))
 });
 
-// user selected a show and we just parsed the (first) show page
+// user selected a show, update the page drop down and auto select and process the first page
 ipcRenderer.on("show_loaded", (event, show) => {
     console.log("Show parsed.");
     console.log(`Maximum page for show ${show.show_name} is ${show.max_page}!`);
@@ -61,8 +59,24 @@ ipcRenderer.on("show_loaded", (event, show) => {
     let limit = show.max_page  
     // need to do a while loop up to this number in pug, but don't know what to pass to it then
     let pgs = Array(limit).fill().map((element, index) => index)
-    select_page.html(gen_pages({pgs : pgs}))  // sends page numbers to pug
+    select_page.html(gen_pages({pgs : pgs}))  // sends page numbers to pug. key is just iterator that the pug code indexes, value is what actually gets acted on
+    ipcRenderer.send("pg_selected", 1, $('#shows').val())
+});
 
+ipcRenderer.on("playlists_ready", (event, playlists)=>{
+    // console.log(playlists);
+    var playlist_list = $('#playlists');
+    let qqq = []
+
+    playlists.forEach((item, index) => {
+        qqq.push(item.date);
+    })
+
+    console.log(qqq)
+
+    console.log(gen_playlists({qqq: qqq}))
+    
+    playlist_list.html(gen_playlists({qqq: qqq}))
 });
 
 // currently homeless:

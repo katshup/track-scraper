@@ -74,32 +74,9 @@ ipcMain.on("prog_ready", (event, arg) => {  // programS ready
 });
 
 ipcMain.on("show_selected", (event, arg) => { // arg is the show object
-  // console.log(arg);
   
   w.once("show_processed", (show) => {
-    console.log(show);
     event.reply("show_loaded", show);
-    
-    show.on("playlists_found", () => {
-      show.playlists[0].process_playlist();  // right now only processes the info in the first playlist
-      console.log(show.playlists[0])
-    });
-    
-    // need to receive the "pg_selected" message and then process the right page
-    // TODO: PROBLEM! it's currently processing the pages from all of the shows that are selected before a process_page event gets to run
-    ipcMain.once("pg_selected", (event, arg) => {  // arg is page number
-      console.log('paage' + arg)
-      show.process_page(arg, (error) => {  
-        // TODO: need to have it auto-select the first page
-        console.log(error);
-      });
-      
-    })
-
-    // show.process_page(1, (error) => {  // right now only processes 1st page
-    //   console.log(error);
-    // });
-    
   });
   
   w.process_show(arg, () => {
@@ -107,6 +84,23 @@ ipcMain.on("show_selected", (event, arg) => { // arg is the show object
   });
 
 });
+
+// need to receive the "pg_selected" message and then process the right page
+ipcMain.on("pg_selected", (event, pg_num, show) => {  // gets num from pg_selected
+  console.log('paage' + pg_num)
+  console.log("show" + show)
+
+  if (show in w.show_map){
+    w.show_map[show].process_page(pg_num, (playlists) => {
+      event.reply("playlists_ready", playlists);
+    },  (error) => {  // index show map with currently selected show from selector
+      console.log(error);
+    });
+  } else {
+    console.log(w.show_map)
+  }
+  
+})
 
 
 
