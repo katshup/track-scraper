@@ -12,19 +12,19 @@
     <p>Welcome to your Electron application.</p>
 
     <div style="background: #FFF; "> <!-- show dropdown -->
-      <select id="shows" onchange="show_selected(this.value)">
+      <select id="shows" onchange="show_selected(this.value)">  <!-- tells index that a show was selected -->
       </select>
     </div>
 
     <!-- playlist dropdown -- considering a list or table instead -->
-    <!-- <div>
-      <select id="dates" onchange="show_selected(this.value)"></select>
-    </div> -->
+    <div>
+      <select id="pages" onchange="pg_selected(this.value)">  <!-- passes page number to index -->
+      </select>
+    </div>
 
     <!-- playlist checkbox list -->
     <div>
       <ul id = "playlists">
-
       </ul>
     </div> 
 

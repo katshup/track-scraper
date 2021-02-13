@@ -68,10 +68,13 @@ class Show extends EventEmitter {
         this.max_page = max_page
         this.search_opt = search_opt
         this.playlists = []  // will hold the associated Playlist objects
-        this.datetimes = []  // array to put date text for display on the page
+        // this.datetimes = []  // array to put date text for display on the page
+        // this.djs = []
     }
 
     process_page(page_num, err_callback){
+        console.log('processing page ' + page_num)
+
         if (page_num > this.max_page){
             err_callback(null)
         }
@@ -89,7 +92,7 @@ class Show extends EventEmitter {
             console.log(playlists.size + ' playlists')
 
             // on this page, get all the dates 
-            // let datetimes = new Array()  // array to put date text for display on the page
+            let datetimes = new Array()  // array to put date text for display on the page
             let dates = new Array()  // TODO: can probably do this in a less awkward way
             // sometimes there are multiple episodes per date, so need to make sure number of dates corresponds with number of playlists
             pl_links.forEach(link => {  // for each playlist link...
@@ -101,7 +104,7 @@ class Show extends EventEmitter {
                     let datetime = pl_date + ' at ' + pl_time  // string together the date and time
 
                     dates.push(pl_date)  // to get passed into the Playlist object
-                    this.datetimes.push(datetime)  // to be displayed on screen
+                    datetimes.push(datetime)  // to be displayed on screen
                     // console.log(Date.parse(pl_date))
                 }
             })
@@ -117,7 +120,7 @@ class Show extends EventEmitter {
                 }
             })
             // check to see if they're the same length
-            console.log(this.datetimes.length)  
+            console.log(datetimes.length)  
             console.log(djs.length)
 
              // set up new playlists with their attributes found on the show page

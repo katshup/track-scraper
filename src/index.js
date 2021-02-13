@@ -63,7 +63,7 @@ app.on('activate', () => {
 });
 
 ipcMain.on("prog_ready", (event, arg) => {  // programS ready
-  console.log(arg);
+  // console.log(arg);
 
   w.on("programs_loaded", (shows) => {
     console.log(Object.keys(shows))
@@ -73,8 +73,8 @@ ipcMain.on("prog_ready", (event, arg) => {  // programS ready
   w.__process_programs();
 });
 
-ipcMain.on("show_selected", (event, arg) => {
-  console.log(arg);
+ipcMain.on("show_selected", (event, arg) => { // arg is the show object
+  // console.log(arg);
   
   w.once("show_processed", (show) => {
     console.log(show);
@@ -85,9 +85,21 @@ ipcMain.on("show_selected", (event, arg) => {
       console.log(show.playlists[0])
     });
     
-    show.process_page(1, (error) => {  // right now only processes 1st page
-      console.log(error);
-    });
+    // need to receive the "pg_selected" message and then process the right page
+    // TODO: PROBLEM! it's currently processing the pages from all of the shows that are selected before a process_page event gets to run
+    ipcMain.once("pg_selected", (event, arg) => {  // arg is page number
+      console.log('paage' + arg)
+      show.process_page(arg, (error) => {  
+        // TODO: need to have it auto-select the first page
+        console.log(error);
+      });
+      
+    })
+
+    // show.process_page(1, (error) => {  // right now only processes 1st page
+    //   console.log(error);
+    // });
+    
   });
   
   w.process_show(arg, () => {
@@ -95,6 +107,8 @@ ipcMain.on("show_selected", (event, arg) => {
   });
 
 });
+
+
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
